@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paredão - Administração</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Paredão - Administração</h1>
+      <nav>
+        <a href="index.html">Votação</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="alert-container"></div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="participants-tab">Participantes</div>
+      <div class="tab" data-tab="votacoes-tab">Votações</div>
+      <div class="tab" data-tab="reports-tab">Relatórios</div>
+    </div>
+
+    <div id="participants-tab" class="tab-content active">
+      <div class="card">
+        <div class="card-header">Gerenciar Participantes</div>
+        <div class="card-body">
+          <div id="participants-table">
+            <div class="spinner"></div>
+            <p>Carregando participantes...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="votacoes-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header">Gerenciar Votações</div>
+        <div class="card-body">
+          <div id="votacoes-table">
+            <div class="spinner"></div>
+            <p>Carregando votações...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="reports-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header">Relatórios de Votação</div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="report-votacao-select">Selecione uma Votação</label>
+            <select id="report-votacao-select" class="form-control">
+              <option value="">Selecione uma votação</option>
+            </select>
+          </div>
+          
+          <div id="report-content" style="display: none;">
+            <div class="report-section">
+              <h3>Total de Votos</h3>
+              <div id="total-votes" class="report-data"></div>
+            </div>
+            
+            <div class="report-section">
+              <h3>Votos por Participante</h3>
+              <div id="votes-by-participant" class="report-data"></div>
+            </div>
+            
+            <div class="report-section">
+              <h3>Votos por Hora</h3>
+              <div id="votes-by-hour" class="report-data"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Participante Modal -->
+  <div id="participante-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="participante-modal-title">Adicionar Participante</h2>
+        <span class="close">&times;</span>
+      </div>
+      <form id="participante-form">
+        <div class="form-group">
+          <label for="participante-nome">Nome</label>
+          <input type="text" id="participante-nome" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="participante-url-foto">URL da Foto</label>
+          <input type="url" id="participante-url-foto" class="form-control" required>
+        </div>
+        <button type="submit" class="btn">Salvar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Votacao Modal -->
+  <div id="votacao-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="votacao-modal-title">Adicionar Votação</h2>
+        <span class="close">&times;</span>
+      </div>
+      <form id="votacao-form">
+        <div class="form-group">
+          <label for="votacao-descricao">Descrição</label>
+          <input type="text" id="votacao-descricao" class="form-control" required>
+        </div>
+        <button type="submit" class="btn">Salvar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Votacao Participantes Modal -->
+  <div id="votacao-participantes-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="votacao-participantes-title">Participantes da Votação</h2>
+        <span class="close">&times;</span>
+      </div>
+      <div id="votacao-participantes-list">
+        <div class="spinner"></div>
+        <p>Carregando participantes...</p>
+      </div>
+      <form id="add-participante-to-votacao-form">
+        <div class="form-group">
+          <label for="participante-id">Adicionar Participante</label>
+          <select id="participante-id" class="form-control">
+            <option value="">Selecione um participante</option>
+          </select>
+        </div>
+        <button type="submit" class="btn">Adicionar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+  <script src="js/reports.js"></script>
+</body>
+</html>

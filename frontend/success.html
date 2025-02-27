@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Paredão - Voto Registrado</title>
+  <link rel="stylesheet" href="css/styles.css?v=1">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Paredão - Voto Registrado</h1>
+      <nav>
+        <a href="index.html">Votação</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="alert-container"></div>
+
+    <div class="card">
+      <div class="card-header">Voto Registrado com Sucesso!</div>
+      <div class="card-body">
+        <div id="loading-indicator" class="spinner"></div>
+        
+        <div id="success-content" style="display: none;">
+          <h2 id="votacao-title" class="text-center"></h2>
+          
+          <div class="stats-container">
+            <div class="stats-box">
+              <h3>Total de Votos</h3>
+              <div id="total-votes" class="stats-value"></div>
+            </div>
+          </div>
+          
+          <h3>Participantes</h3>
+          <div id="participants-container"></div>
+          
+          <div class="text-center" style="margin-top: 20px;">
+            <a href="index.html" class="btn btn-success">Votar Novamente</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/success.js?v=1"></script>
+</body>
+</html>

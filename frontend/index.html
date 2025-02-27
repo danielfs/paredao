@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paredão - Votação</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Paredão - Votação</h1>
+      <nav>
+        <a href="index.html">Votação</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="alert-container"></div>
+
+    <div class="card">
+      <div class="card-header">Votação</div>
+      <div class="card-body">
+        <div class="form-group">
+          <label for="votacao-selector">Selecione uma votação</label>
+          <select id="votacao-selector" class="form-control">
+            <option value="">Carregando votações...</option>
+          </select>
+        </div>
+
+        <div id="loading-indicator" class="spinner" style="display: none;"></div>
+
+        <div id="participants-container">
+          <p>Selecione uma votação para ver os participantes</p>
+        </div>
+
+        <button id="vote-button" class="btn btn-success" disabled>Votar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/voting.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+POST http://localhost:8080/votos
+Content-Type: application/json
+@./payload1.json
+
+POST http://localhost:8080/votos
+Content-Type: application/json
+@./payload2.json
+
+POST http://localhost:8080/votos
+Content-Type: application/json
+@./payload3.json
