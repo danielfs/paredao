@@ -13,38 +13,37 @@ import (
 
 var DB *sql.DB
 
-// InitDB initializes the database connection
 func InitDB() {
-	// Load .env file if it exists
+	// Carrega o arquivo .env se existir
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using environment variables")
 	}
 
-	// Get database connection details from environment variables
-	// with fallback to default values
+	// Obtém detalhes de conexão do banco de dados das variáveis de ambiente
+	// com fallback para valores padrão
 	dbUser := getEnv("DB_USER", "root")
 	dbPassword := getEnv("DB_PASSWORD", "password")
 	dbHost := getEnv("DB_HOST", "localhost")
 	dbPort := getEnv("DB_PORT", "3306")
 	dbName := getEnv("DB_NAME", "paredao")
 
-	// Create connection string
+	// Cria string de conexão
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
 		dbUser, dbPassword, dbHost, dbPort, dbName)
 
-	// Open database connection
+	// Abre conexão com o banco de dados
 	var err error
 	DB, err = sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatalf("Failed to open database connection: %v", err)
 	}
 
-	// Set connection pool parameters
+	// Define parâmetros do pool de conexões
 	DB.SetMaxOpenConns(25)
 	DB.SetMaxIdleConns(5)
 	DB.SetConnMaxLifetime(5 * time.Minute)
 
-	// Test the connection
+	// Testa a conexão
 	err = DB.Ping()
 	if err != nil {
 		log.Fatalf("Failed to ping database: %v", err)
@@ -53,7 +52,6 @@ func InitDB() {
 	log.Println("Database connection established")
 }
 
-// CloseDB closes the database connection
 func CloseDB() {
 	if DB != nil {
 		DB.Close()
@@ -61,7 +59,7 @@ func CloseDB() {
 	}
 }
 
-// Helper function to get environment variable with fallback
+// Função auxiliar para obter variável de ambiente com fallback
 func getEnv(key, fallback string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value

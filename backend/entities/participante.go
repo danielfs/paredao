@@ -1,7 +1,7 @@
 package entities
 
 type Participante struct {
-	Id      int64
-	Nome    string
-	UrlFoto string
+	ID      int64  `json:"id"`
+	Nome    string `json:"nome"`
+	URLFoto string `json:"urlFoto"`
 }

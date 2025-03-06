@@ -160,14 +160,14 @@ function renderParticipantesTable(participantes) {
     participantes.forEach(participante => {
       html += `
         <tr>
-          <td>${participante.Id}</td>
-          <td>${participante.Nome}</td>
+          <td>${participante.id}</td>
+          <td>${participante.nome}</td>
           <td>
-            <img src="${participante.UrlFoto}" alt="${participante.Nome}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+            <img src="${participante.urlFoto}" alt="${participante.nome}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
           </td>
           <td>
-            <button class="btn" onclick="editParticipante(${participante.Id})">Editar</button>
-            <button class="btn btn-danger" onclick="deleteParticipante(${participante.Id})">Excluir</button>
+            <button class="btn" onclick="editParticipante(${participante.id})">Editar</button>
+            <button class="btn btn-danger" onclick="deleteParticipante(${participante.id})">Excluir</button>
           </td>
         </tr>
       `;
@@ -191,7 +191,7 @@ function populateParticipanteDropdown(participantes) {
   dropdown.innerHTML = '<option value="">Selecione um participante</option>';
   
   participantes.forEach(participante => {
-    dropdown.innerHTML += `<option value="${participante.Id}">${participante.Nome}</option>`;
+    dropdown.innerHTML += `<option value="${participante.id}">${participante.nome}</option>`;
   });
 }
 
@@ -210,8 +210,8 @@ function openParticipanteModal(id = null) {
         return response.json();
       })
       .then(participante => {
-        document.getElementById('participante-nome').value = participante.Nome;
-        document.getElementById('participante-url-foto').value = participante.UrlFoto;
+        document.getElementById('participante-nome').value = participante.nome;
+        document.getElementById('participante-url-foto').value = participante.urlFoto;
         document.getElementById('participante-modal-title').textContent = 'Editar Participante';
       })
       .catch(error => {
@@ -237,8 +237,8 @@ function saveParticipante() {
   }
   
   const participante = {
-    Nome: nome,
-    UrlFoto: urlFoto
+    nome: nome,
+    urlFoto: urlFoto
   };
   
   const url = currentParticipanteId 
@@ -331,12 +331,12 @@ function renderVotacoesTable(votacoes) {
     votacoes.forEach(votacao => {
       html += `
         <tr>
-          <td>${votacao.Id}</td>
-          <td>${votacao.Descricao}</td>
+          <td>${votacao.id}</td>
+          <td>${votacao.descricao}</td>
           <td>
-            <button class="btn" onclick="editVotacao(${votacao.Id})">Editar</button>
-            <button class="btn btn-danger" onclick="deleteVotacao(${votacao.Id})">Excluir</button>
-            <button class="btn" onclick="manageVotacaoParticipantes(${votacao.Id})">Gerenciar Participantes</button>
+            <button class="btn" onclick="editVotacao(${votacao.id})">Editar</button>
+            <button class="btn btn-danger" onclick="deleteVotacao(${votacao.id})">Excluir</button>
+            <button class="btn" onclick="manageVotacaoParticipantes(${votacao.id})">Gerenciar Participantes</button>
           </td>
         </tr>
       `;
@@ -367,7 +367,7 @@ function openVotacaoModal(id = null) {
         return response.json();
       })
       .then(votacao => {
-        document.getElementById('votacao-descricao').value = votacao.Descricao;
+        document.getElementById('votacao-descricao').value = votacao.descricao;
         document.getElementById('votacao-modal-title').textContent = 'Editar Votação';
       })
       .catch(error => {
@@ -392,7 +392,7 @@ function saveVotacao() {
   }
   
   const votacao = {
-    Descricao: descricao
+    descricao: descricao
   };
   
   const url = currentVotacaoId 
@@ -454,7 +454,7 @@ function manageVotacaoParticipantes(votacaoId) {
       return response.json();
     })
     .then(votacao => {
-      document.getElementById('votacao-participantes-title').textContent = `Participantes da Votação: ${votacao.Descricao}`;
+      document.getElementById('votacao-participantes-title').textContent = `Participantes da Votação: ${votacao.descricao}`;
       
       // Load participantes for this votacao
       return fetch(`${API_BASE_URL}/votacoes/${votacaoId}/participantes`);
@@ -488,9 +488,9 @@ function renderVotacaoParticipantes(participantes) {
     html += `
       <li>
         <div class="participant-card">
-          <img src="${participante.UrlFoto}" alt="${participante.Nome}" class="participant-image">
+          <img src="${participante.urlFoto}" alt="${participante.nome}" class="participant-image">
           <div class="participant-info">
-            <div class="participant-name">${participante.Nome}</div>
+            <div class="participant-name">${participante.nome}</div>
           </div>
         </div>
       </li>

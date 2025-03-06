@@ -5,20 +5,22 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
+
 	"github.com/danielfs/paredao/backend/entities"
 	"github.com/danielfs/paredao/backend/repositories"
-	"github.com/gorilla/mux"
 )
 
-// GetVotacoes handles GET /votacoes
 func GetVotacoes(w http.ResponseWriter, r *http.Request) {
 	votacoes := repositories.GetAllVotacoes()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(votacoes)
+	if err := json.NewEncoder(w).Encode(votacoes); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// GetVotacao handles GET /votacoes/{id}
 func GetVotacao(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -34,10 +36,12 @@ func GetVotacao(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(votacao)
+	if err := json.NewEncoder(w).Encode(votacao); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// CreateVotacao handles POST /votacoes
 func CreateVotacao(w http.ResponseWriter, r *http.Request) {
 	var votacao entities.Votacao
 	err := json.NewDecoder(r.Body).Decode(&votacao)
@@ -46,21 +50,23 @@ func CreateVotacao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
+	// Valida campos obrigatórios
 	if votacao.Descricao == "" {
 		http.Error(w, "Descricao is required", http.StatusBadRequest)
 		return
 	}
 
-	// Save votacao
+	// Salva votação
 	savedVotacao := repositories.SaveVotacao(&votacao)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(savedVotacao)
+	if err := json.NewEncoder(w).Encode(savedVotacao); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// UpdateVotacao handles PUT /votacoes/{id}
 func UpdateVotacao(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -69,14 +75,14 @@ func UpdateVotacao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if votacao exists
+	// Verifica se a votação existe
 	_, exists := repositories.GetVotacaoByID(id)
 	if !exists {
 		http.Error(w, "Votacao not found", http.StatusNotFound)
 		return
 	}
 
-	// Decode request body
+	// Decodifica o corpo da requisição
 	var votacao entities.Votacao
 	err = json.NewDecoder(r.Body).Decode(&votacao)
 	if err != nil {
@@ -84,23 +90,25 @@ func UpdateVotacao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ensure ID matches path parameter
-	votacao.Id = id
+	// Garante que o ID corresponde ao parâmetro do caminho
+	votacao.ID = id
 
-	// Validate required fields
+	// Valida campos obrigatórios
 	if votacao.Descricao == "" {
 		http.Error(w, "Descricao is required", http.StatusBadRequest)
 		return
 	}
 
-	// Save updated votacao
+	// Salva a votação atualizada
 	updatedVotacao := repositories.SaveVotacao(&votacao)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(updatedVotacao)
+	if err := json.NewEncoder(w).Encode(updatedVotacao); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// DeleteVotacao handles DELETE /votacoes/{id}
 func DeleteVotacao(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -118,7 +126,6 @@ func DeleteVotacao(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GetVotacaoParticipantes handles GET /votacoes/{id}/participantes
 func GetVotacaoParticipantes(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -127,7 +134,7 @@ func GetVotacaoParticipantes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if votacao exists
+	// Verifica se a votação existe
 	_, exists := repositories.GetVotacaoByID(id)
 	if !exists {
 		http.Error(w, "Votacao not found", http.StatusNotFound)
@@ -137,10 +144,12 @@ func GetVotacaoParticipantes(w http.ResponseWriter, r *http.Request) {
 	participantes := repositories.GetParticipantesByVotacaoID(id)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(participantes)
+	if err := json.NewEncoder(w).Encode(participantes); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// AddParticipanteToVotacao handles POST /votacoes/{id}/participantes
 func AddParticipanteToVotacao(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	votacaoID, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -149,14 +158,14 @@ func AddParticipanteToVotacao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if votacao exists
+	// Verifica se a votação existe
 	_, exists := repositories.GetVotacaoByID(votacaoID)
 	if !exists {
 		http.Error(w, "Votacao not found", http.StatusNotFound)
 		return
 	}
 
-	// Parse request body
+	// Analisa o corpo da requisição
 	var request struct {
 		ParticipanteID int64 `json:"participanteId"`
 	}
@@ -167,28 +176,31 @@ func AddParticipanteToVotacao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
+	// Valida campos obrigatórios
 	if request.ParticipanteID == 0 {
 		http.Error(w, "ParticipanteId is required", http.StatusBadRequest)
 		return
 	}
 
-	// Check if participante exists
+	// Verifica se o participante existe
 	participante, exists := repositories.GetParticipanteByID(request.ParticipanteID)
 	if !exists {
 		http.Error(w, "Participante not found", http.StatusNotFound)
 		return
 	}
 
-	// Add participante to votacao
+	// Adiciona participante à votação
 	success := repositories.AddParticipanteToVotacaoInDB(request.ParticipanteID, votacaoID)
 	if !success {
 		http.Error(w, "Failed to add participante to votacao", http.StatusInternalServerError)
 		return
 	}
 
-	// Return the participante that was added
+	// Retorna o participante que foi adicionado
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(participante)
+	if err := json.NewEncoder(w).Encode(participante); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }

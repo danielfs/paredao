@@ -6,150 +6,105 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
+
 	"github.com/danielfs/paredao/backend/entities"
 	"github.com/danielfs/paredao/backend/repositories"
-	"github.com/gorilla/mux"
 )
 
-// GetVotacaoTotal handles GET /estatisticas/votacoes/{id}/total
+func getVotacaoData(
+	w http.ResponseWriter,
+	r *http.Request,
+	cacheKeyFormat string,
+	fetchData func(int64) (interface{}, error),
+	errorMsg string,
+) {
+	vars := mux.Vars(r)
+	ctx := r.Context()
+
+	votacaoID, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid votacaoID format", http.StatusBadRequest)
+		return
+	}
+
+	_, exists := repositories.GetVotacaoByID(votacaoID)
+	if !exists {
+		http.Error(w, "Votacao not found", http.StatusNotFound)
+		return
+	}
+
+	cacheKey := fmt.Sprintf(cacheKeyFormat, votacaoID)
+
+	var data interface{}
+	found, err := repositories.GetFromCache(ctx, cacheKey, &data)
+	if err != nil {
+		// Registra o erro mas continua com a consulta ao banco de dados
+		fmt.Printf("Cache error: %v\n", err)
+	}
+
+	if !found {
+		// Cache não encontrado, busca no banco de dados
+		data, err = fetchData(votacaoID)
+		if err != nil {
+			http.Error(w, errorMsg, http.StatusInternalServerError)
+			return
+		}
+
+		// Armazena no cache para requisições futuras
+		if err := repositories.SetCache(ctx, cacheKey, data); err != nil {
+			// Registra o erro mas continua mesmo se o cache falhar
+			fmt.Printf("Cache set error: %v\n", err)
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		fmt.Printf("JSON encode error: %v\n", err)
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
+}
+
 func GetVotacaoTotal(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	ctx := r.Context()
-
-	votacaoId, err := strconv.ParseInt(vars["id"], 10, 64)
-	if err != nil {
-		http.Error(w, "Invalid votacaoId format", http.StatusBadRequest)
-		return
-	}
-
-	// Check if votacao exists
-	_, exists := repositories.GetVotacaoByID(votacaoId)
-	if !exists {
-		http.Error(w, "Votacao not found", http.StatusNotFound)
-		return
-	}
-
-	// Create cache key
-	cacheKey := fmt.Sprintf(repositories.TotalCacheKey, votacaoId)
-
-	// Try to get from cache first
-	var response entities.VotacaoTotalResponse
-	found, err := repositories.GetFromCache(ctx, cacheKey, &response)
-	if err != nil {
-		// Continue with database query on cache error
-	}
-
-	if !found {
-		// Cache miss, get from database
-		total, err := repositories.GetTotalVotesForVotacao(votacaoId)
-		if err != nil {
-			http.Error(w, "Error getting total votes", http.StatusInternalServerError)
-			return
-		}
-
-		response = entities.VotacaoTotalResponse{
-			VotacaoId: votacaoId,
-			Total:     total,
-		}
-
-		// Store in cache for future requests
-		if err := repositories.SetCache(ctx, cacheKey, response); err != nil {
-			// Continue even if caching fails
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	getVotacaoData(
+		w,
+		r,
+		repositories.TotalCacheKey,
+		func(votacaoID int64) (interface{}, error) {
+			total, err := repositories.GetTotalVotesForVotacao(votacaoID)
+			if err != nil {
+				return nil, err
+			}
+			return entities.VotacaoTotalResponse{
+				VotacaoID: votacaoID,
+				Total:     total,
+			}, nil
+		},
+		"Error getting total votes",
+	)
 }
 
-// GetVotacaoTotalByParticipante handles GET /estatisticas/votacoes/{id}/participantes
 func GetVotacaoTotalByParticipante(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	ctx := r.Context()
-
-	votacaoId, err := strconv.ParseInt(vars["id"], 10, 64)
-	if err != nil {
-		http.Error(w, "Invalid votacaoId format", http.StatusBadRequest)
-		return
-	}
-
-	// Check if votacao exists
-	_, exists := repositories.GetVotacaoByID(votacaoId)
-	if !exists {
-		http.Error(w, "Votacao not found", http.StatusNotFound)
-		return
-	}
-
-	// Create cache key
-	cacheKey := fmt.Sprintf(repositories.ParticipantCacheKey, votacaoId)
-
-	// Try to get from cache first
-	var totals []entities.ParticipanteTotalResponse
-	found, err := repositories.GetFromCache(ctx, cacheKey, &totals)
-	if err != nil {
-		// Continue with database query on cache error
-	}
-
-	if !found {
-		// Cache miss, get from database
-		totals, err = repositories.GetTotalVotesByParticipante(votacaoId)
-		if err != nil {
-			http.Error(w, "Error getting total votes by participante", http.StatusInternalServerError)
-			return
-		}
-
-		// Store in cache for future requests
-		if err := repositories.SetCache(ctx, cacheKey, totals); err != nil {
-			// Continue even if caching fails
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(totals)
+	getVotacaoData(
+		w,
+		r,
+		repositories.ParticipantCacheKey,
+		func(votacaoID int64) (interface{}, error) {
+			return repositories.GetTotalVotesByParticipante(votacaoID)
+		},
+		"Error getting total votes by participante",
+	)
 }
 
-// GetVotacaoTotalByHour handles GET /estatisticas/votacoes/{id}/hourly
 func GetVotacaoTotalByHour(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	ctx := r.Context()
-
-	votacaoId, err := strconv.ParseInt(vars["id"], 10, 64)
-	if err != nil {
-		http.Error(w, "Invalid votacaoId format", http.StatusBadRequest)
-		return
-	}
-
-	// Check if votacao exists
-	_, exists := repositories.GetVotacaoByID(votacaoId)
-	if !exists {
-		http.Error(w, "Votacao not found", http.StatusNotFound)
-		return
-	}
-
-	// Create cache key
-	cacheKey := fmt.Sprintf(repositories.HourlyCacheKey, votacaoId)
-
-	// Try to get from cache first
-	var totals []entities.HourlyTotalResponse
-	found, err := repositories.GetFromCache(ctx, cacheKey, &totals)
-	if err != nil {
-		// Continue with database query on cache error
-	}
-
-	if !found {
-		// Cache miss, get from database
-		totals, err = repositories.GetTotalVotesByHour(votacaoId)
-		if err != nil {
-			http.Error(w, "Error getting total votes by hour", http.StatusInternalServerError)
-			return
-		}
-
-		// Store in cache for future requests
-		if err := repositories.SetCache(ctx, cacheKey, totals); err != nil {
-			// Continue even if caching fails
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(totals)
+	getVotacaoData(
+		w,
+		r,
+		repositories.HourlyCacheKey,
+		func(votacaoID int64) (interface{}, error) {
+			return repositories.GetTotalVotesByHour(votacaoID)
+		},
+		"Error getting total votes by hour",
+	)
 }

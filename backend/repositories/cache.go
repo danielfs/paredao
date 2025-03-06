@@ -10,22 +10,21 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// Cache TTL
-const cacheTTL = 60 * time.Second // 1 minute
+// TTL do Cache
+const cacheTTL = 1 * time.Second
 
-// Cache key prefixes
+// Prefixos das chaves de cache
 const (
 	TotalCacheKey       = "stats:total:%d"
 	ParticipantCacheKey = "stats:participant:%d"
 	HourlyCacheKey      = "stats:hourly:%d"
 )
 
-// RedisClient is the global Redis client
+// RedisClient é o cliente Redis global
 var RedisClient *redis.Client
 
-// InitRedis initializes the Redis client
 func InitRedis(host, port string) {
-	// Default to localhost:6379 if environment variables are not set
+	// Padrão para localhost:6379 se as variáveis de ambiente não estiverem definidas
 	if host == "" {
 		host = "localhost"
 	}
@@ -36,12 +35,12 @@ func InitRedis(host, port string) {
 	redisAddr := fmt.Sprintf("%s:%s", host, port)
 
 	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     redisAddr, // Redis server address
-		Password: "",        // No password set
-		DB:       0,         // Use default DB
+		Addr:     redisAddr, // Endereço do servidor Redis
+		Password: "",        // Sem senha definida
+		DB:       0,         // Usa o DB padrão
 	})
 
-	// Test Redis connection
+	// Testa a conexão Redis
 	ctx := context.Background()
 	_, err := RedisClient.Ping(ctx).Result()
 	if err != nil {
@@ -51,7 +50,6 @@ func InitRedis(host, port string) {
 	}
 }
 
-// CloseRedis closes the Redis client
 func CloseRedis() {
 	if RedisClient != nil {
 		RedisClient.Close()
@@ -59,7 +57,6 @@ func CloseRedis() {
 	}
 }
 
-// GetFromCache retrieves data from cache
 func GetFromCache(ctx context.Context, key string, result interface{}) (bool, error) {
 	if RedisClient == nil {
 		return false, nil
@@ -67,15 +64,15 @@ func GetFromCache(ctx context.Context, key string, result interface{}) (bool, er
 
 	data, err := RedisClient.Get(ctx, key).Result()
 	if err == redis.Nil {
-		// Key does not exist in cache
+		// Chave não existe no cache
 		return false, nil
 	} else if err != nil {
-		// Error accessing Redis
+		// Erro ao acessar o Redis
 		log.Printf("Redis error: %v", err)
 		return false, err
 	}
 
-	// Unmarshal the cached data
+	// Desserializa os dados em cache
 	err = json.Unmarshal([]byte(data), result)
 	if err != nil {
 		return false, err
@@ -84,19 +81,18 @@ func GetFromCache(ctx context.Context, key string, result interface{}) (bool, er
 	return true, nil
 }
 
-// SetCache stores data in cache
 func SetCache(ctx context.Context, key string, data interface{}) error {
 	if RedisClient == nil {
 		return nil
 	}
 
-	// Marshal the data
+	// Serializa os dados
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	// Set in Redis with TTL
+	// Define no Redis com TTL
 	err = RedisClient.Set(ctx, key, jsonData, cacheTTL).Err()
 	if err != nil {
 		log.Printf("Redis set error: %v", err)

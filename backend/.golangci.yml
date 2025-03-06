@@ -1,0 +1,97 @@
+linters-settings:
+  govet:
+    check-shadowing: true
+  gocyclo:
+    min-complexity: 10
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 2
+    min-occurrences: 3
+  lll:
+    line-length: 120
+  goimports:
+    local-prefixes: github.com/danielfs/paredao
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - wrapperFunc
+      - dupImport
+      - octalLiteral
+      - unnamedResult
+  funlen:
+    lines: 60
+    statements: 40
+  revive:
+    rules:
+      - name: exported
+        severity: warning
+        disabled: false
+  gosec:
+    excludes:
+      - G104 # Audit errors not checked
+
+linters:
+  disable-all: true
+  enable:
+    # Error checking
+    - errcheck     # Checks for unchecked errors
+    - gosec        # Inspects source code for security problems
+    - govet        # Reports suspicious constructs
+    - staticcheck  # Go static analysis
+    - typecheck    # Like the front-end of a Go compiler
+    
+    # Code simplicity
+    - gocyclo      # Checks function complexity
+    - goconst      # Finds repeated strings that could be constants
+    - gosimple     # Suggests code simplifications
+    - unused       # Checks for unused constants, variables, functions and types
+    
+    # Code style
+    - gofmt        # Checks if code was gofmt-ed
+    - goimports    # Checks import statements are formatted according to goimports
+    - revive       # Fast, configurable, extensible, flexible, and beautiful linter
+    - stylecheck   # Stylecheck is a replacement for golint
+    
+    # Performance
+    - bodyclose    # Checks whether HTTP response body is closed
+    - noctx        # Finds sending http request without context.Context
+    - prealloc     # Finds slice declarations that could potentially be preallocated
+    
+    # Additional useful linters
+    - dogsled      # Checks for too many blank identifiers (e.g. x, _, _, _, := f())
+    - dupl         # Finds code clones
+    - gocritic     # Provides many diagnostics
+    - gofumpt      # Stricter gofmt
+    - lll          # Reports long lines
+    - nakedret     # Finds naked returns
+    - unconvert    # Removes unnecessary type conversions
+    - unparam      # Reports unused function parameters
+    - whitespace   # Checks for unnecessary whitespace
+
+run:
+  timeout: 5m
+  skip-dirs:
+    - vendor/
+  skip-files:
+    - .*_test.go
+    - .*_mock.go
+
+issues:
+  exclude-rules:
+    - path: backend/handlers/
+      linters:
+        - funlen
+    - path: backend/repositories/
+      linters:
+        - funlen
+    - path: backend/main.go
+      linters:
+        - funlen
+  max-issues-per-linter: 0
+  max-same-issues: 0

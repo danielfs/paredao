@@ -1,6 +1,6 @@
 package entities
 
 type Votacao struct {
-	Id        int64
-	Descricao string
+	ID        int64  `json:"id"`
+	Descricao string `json:"descricao"`
 }

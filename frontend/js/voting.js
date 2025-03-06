@@ -106,7 +106,8 @@ function renderVotacaoSelector(votacoes) {
   }
   
   votacoes.forEach(votacao => {
-    votacaoSelector.innerHTML += `<option value="${votacao.Id}">${votacao.Descricao}</option>`;
+    console.log(votacao);
+    votacaoSelector.innerHTML += `<option value="${votacao.id}">${votacao.descricao}</option>`;
   });
 }
 
@@ -148,10 +149,10 @@ function renderParticipantes(participantes) {
   
   participantes.forEach(participante => {
     html += `
-      <div class="participant-card" data-id="${participante.Id}" onclick="selectParticipante(${participante.Id})">
-        <img src="${participante.UrlFoto}" alt="${participante.Nome}" class="participant-image">
+      <div class="participant-card" data-id="${participante.id}" onclick="selectParticipante(${participante.id})">
+        <img src="${participante.urlFoto}" alt="${participante.nome}" class="participant-image">
         <div class="participant-info">
-          <div class="participant-name">${participante.Nome}</div>
+          <div class="participant-name">${participante.nome}</div>
         </div>
       </div>
     `;

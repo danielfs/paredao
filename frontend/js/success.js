@@ -132,7 +132,7 @@ async function fetchVotacaoParticipantes(id) {
 function renderData(votacao) {
   // Set votacao title
   if (votacaoTitle) {
-    votacaoTitle.textContent = votacao.Descricao;
+    votacaoTitle.textContent = votacao.descricao;
   }
   
   // Set total votes

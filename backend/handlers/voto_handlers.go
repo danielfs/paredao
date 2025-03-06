@@ -5,50 +5,54 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
+
 	"github.com/danielfs/paredao/backend/entities"
 	"github.com/danielfs/paredao/backend/repositories"
-	"github.com/gorilla/mux"
 )
 
-// GetVotos handles GET /votos
 func GetVotos(w http.ResponseWriter, r *http.Request) {
 	votos := repositories.GetAllVotos()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(votos)
+	if err := json.NewEncoder(w).Encode(votos); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// GetVoto handles GET /votos/{participanteId}/{votacaoId}
 func GetVoto(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	participanteId, err := strconv.ParseInt(vars["participanteId"], 10, 64)
+	participanteID, err := strconv.ParseInt(vars["participanteID"], 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid participanteId format", http.StatusBadRequest)
+		http.Error(w, "Invalid participanteID format", http.StatusBadRequest)
 		return
 	}
 
-	votacaoId, err := strconv.ParseInt(vars["votacaoId"], 10, 64)
+	votacaoID, err := strconv.ParseInt(vars["votacaoID"], 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid votacaoId format", http.StatusBadRequest)
+		http.Error(w, "Invalid votacaoID format", http.StatusBadRequest)
 		return
 	}
 
-	voto, exists := repositories.GetVotoByIDs(participanteId, votacaoId)
+	voto, exists := repositories.GetVotoByIDs(participanteID, votacaoID)
 	if !exists {
 		http.Error(w, "Voto not found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(voto)
+	if err := json.NewEncoder(w).Encode(voto); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// CreateVoto handles POST /votos
 func CreateVoto(w http.ResponseWriter, r *http.Request) {
 	var votoRequest struct {
-		ParticipanteId int64 `json:"participanteId"`
-		VotacaoId      int64 `json:"votacaoId"`
+		ParticipanteID int64 `json:"participanteId"`
+		VotacaoID      int64 `json:"votacaoId"`
 	}
 
 	err := json.NewDecoder(r.Body).Decode(&votoRequest)
@@ -57,36 +61,39 @@ func CreateVoto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if votoRequest.ParticipanteId == 0 || votoRequest.VotacaoId == 0 {
-		http.Error(w, "ParticipanteId and VotacaoId are required", http.StatusBadRequest)
+	// Valida campos obrigatórios
+	if votoRequest.ParticipanteID == 0 || votoRequest.VotacaoID == 0 {
+		http.Error(w, "ParticipanteID and VotacaoID are required", http.StatusBadRequest)
 		return
 	}
 
-	// Check if participante exists
-	participante, exists := repositories.GetParticipanteByID(votoRequest.ParticipanteId)
+	// Verifica se o participante existe
+	participante, exists := repositories.GetParticipanteByID(votoRequest.ParticipanteID)
 	if !exists {
 		http.Error(w, "Participante not found", http.StatusNotFound)
 		return
 	}
 
-	// Check if votacao exists
-	votacao, exists := repositories.GetVotacaoByID(votoRequest.VotacaoId)
+	// Verifica se a votação existe
+	votacao, exists := repositories.GetVotacaoByID(votoRequest.VotacaoID)
 	if !exists {
 		http.Error(w, "Votacao not found", http.StatusNotFound)
 		return
 	}
 
-	// Create voto
+	// Cria voto
 	voto := &entities.Voto{
 		Participante: participante,
 		Votacao:      votacao,
 	}
 
-	// Save voto
+	// Salva voto
 	savedVoto := repositories.SaveVoto(voto)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(savedVoto)
+	if err := json.NewEncoder(w).Encode(savedVoto); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/danielfs/paredao/backend/entities"
 )
 
-// GetAllVotacoes retrieves all votacoes from the database
 func GetAllVotacoes() []*entities.Votacao {
 	rows, err := DB.Query("SELECT id, descricao FROM votacoes")
 	if err != nil {
@@ -19,7 +18,7 @@ func GetAllVotacoes() []*entities.Votacao {
 	votacoes := []*entities.Votacao{}
 	for rows.Next() {
 		v := &entities.Votacao{}
-		if err := rows.Scan(&v.Id, &v.Descricao); err != nil {
+		if err := rows.Scan(&v.ID, &v.Descricao); err != nil {
 			log.Printf("Error scanning votacao row: %v", err)
 			continue
 		}
@@ -33,12 +32,10 @@ func GetAllVotacoes() []*entities.Votacao {
 	return votacoes
 }
 
-// GetVotacaoByID retrieves a votacao by ID
 func GetVotacaoByID(id int64) (*entities.Votacao, bool) {
 	v := &entities.Votacao{}
 	err := DB.QueryRow("SELECT id, descricao FROM votacoes WHERE id = ?", id).
-		Scan(&v.Id, &v.Descricao)
-
+		Scan(&v.ID, &v.Descricao)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, false
@@ -50,10 +47,9 @@ func GetVotacaoByID(id int64) (*entities.Votacao, bool) {
 	return v, true
 }
 
-// SaveVotacao saves a votacao to the database
 func SaveVotacao(v *entities.Votacao) *entities.Votacao {
-	if v.Id == 0 {
-		// Insert new votacao
+	if v.ID == 0 {
+		// Insere nova votação
 		result, err := DB.Exec(
 			"INSERT INTO votacoes (descricao) VALUES (?)",
 			v.Descricao,
@@ -69,12 +65,12 @@ func SaveVotacao(v *entities.Votacao) *entities.Votacao {
 			return nil
 		}
 
-		v.Id = id
+		v.ID = id
 	} else {
-		// Update existing votacao
+		// Atualiza votação existente
 		_, err := DB.Exec(
 			"UPDATE votacoes SET descricao = ? WHERE id = ?",
-			v.Descricao, v.Id,
+			v.Descricao, v.ID,
 		)
 		if err != nil {
 			log.Printf("Error updating votacao: %v", err)
@@ -85,7 +81,6 @@ func SaveVotacao(v *entities.Votacao) *entities.Votacao {
 	return v
 }
 
-// DeleteVotacaoByID deletes a votacao by ID
 func DeleteVotacaoByID(id int64) bool {
 	result, err := DB.Exec("DELETE FROM votacoes WHERE id = ?", id)
 	if err != nil {
@@ -102,9 +97,8 @@ func DeleteVotacaoByID(id int64) bool {
 	return rowsAffected > 0
 }
 
-// AddParticipanteToVotacaoInDB adds a participante to a votacao
 func AddParticipanteToVotacaoInDB(participanteID, votacaoID int64) bool {
-	// Check if participante and votacao exist
+	// Verifica se o participante e a votação existem
 	_, participanteExists := GetParticipanteByID(participanteID)
 	_, votacaoExists := GetVotacaoByID(votacaoID)
 
@@ -113,7 +107,7 @@ func AddParticipanteToVotacaoInDB(participanteID, votacaoID int64) bool {
 		return false
 	}
 
-	// Check if the relationship already exists
+	// Verifica se o relacionamento já existe
 	var exists bool
 	err := DB.QueryRow(
 		"SELECT 1 FROM votacao_participante WHERE participante_id = ? AND votacao_id = ?",
@@ -126,16 +120,15 @@ func AddParticipanteToVotacaoInDB(participanteID, votacaoID int64) bool {
 	}
 
 	if err == nil {
-		// Relationship already exists
+		// Relacionamento já existe
 		return true
 	}
 
-	// Insert new relationship
+	// Insere novo relacionamento
 	_, err = DB.Exec(
 		"INSERT INTO votacao_participante (participante_id, votacao_id) VALUES (?, ?)",
 		participanteID, votacaoID,
 	)
-
 	if err != nil {
 		log.Printf("Error adding participante to votacao: %v", err)
 		return false

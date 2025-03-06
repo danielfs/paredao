@@ -7,7 +7,6 @@ import (
 	"github.com/danielfs/paredao/backend/entities"
 )
 
-// GetAllParticipantes retrieves all participantes from the database
 func GetAllParticipantes() []*entities.Participante {
 	rows, err := DB.Query("SELECT id, nome, url_foto FROM participantes")
 	if err != nil {
@@ -19,7 +18,7 @@ func GetAllParticipantes() []*entities.Participante {
 	participantes := []*entities.Participante{}
 	for rows.Next() {
 		p := &entities.Participante{}
-		if err := rows.Scan(&p.Id, &p.Nome, &p.UrlFoto); err != nil {
+		if err := rows.Scan(&p.ID, &p.Nome, &p.URLFoto); err != nil {
 			log.Printf("Error scanning participante row: %v", err)
 			continue
 		}
@@ -33,12 +32,10 @@ func GetAllParticipantes() []*entities.Participante {
 	return participantes
 }
 
-// GetParticipanteByID retrieves a participante by ID
 func GetParticipanteByID(id int64) (*entities.Participante, bool) {
 	p := &entities.Participante{}
 	err := DB.QueryRow("SELECT id, nome, url_foto FROM participantes WHERE id = ?", id).
-		Scan(&p.Id, &p.Nome, &p.UrlFoto)
-
+		Scan(&p.ID, &p.Nome, &p.URLFoto)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, false
@@ -50,13 +47,12 @@ func GetParticipanteByID(id int64) (*entities.Participante, bool) {
 	return p, true
 }
 
-// SaveParticipante saves a participante to the database
 func SaveParticipante(p *entities.Participante) *entities.Participante {
-	if p.Id == 0 {
-		// Insert new participante
+	if p.ID == 0 {
+		// Insere novo participante
 		result, err := DB.Exec(
 			"INSERT INTO participantes (nome, url_foto) VALUES (?, ?)",
-			p.Nome, p.UrlFoto,
+			p.Nome, p.URLFoto,
 		)
 		if err != nil {
 			log.Printf("Error inserting participante: %v", err)
@@ -69,12 +65,12 @@ func SaveParticipante(p *entities.Participante) *entities.Participante {
 			return nil
 		}
 
-		p.Id = id
+		p.ID = id
 	} else {
-		// Update existing participante
+		// Atualiza participante existente
 		_, err := DB.Exec(
 			"UPDATE participantes SET nome = ?, url_foto = ? WHERE id = ?",
-			p.Nome, p.UrlFoto, p.Id,
+			p.Nome, p.URLFoto, p.ID,
 		)
 		if err != nil {
 			log.Printf("Error updating participante: %v", err)
@@ -85,7 +81,6 @@ func SaveParticipante(p *entities.Participante) *entities.Participante {
 	return p
 }
 
-// DeleteParticipanteByID deletes a participante by ID
 func DeleteParticipanteByID(id int64) bool {
 	result, err := DB.Exec("DELETE FROM participantes WHERE id = ?", id)
 	if err != nil {
@@ -102,7 +97,6 @@ func DeleteParticipanteByID(id int64) bool {
 	return rowsAffected > 0
 }
 
-// GetParticipantesByVotacaoID retrieves all participantes for a votacao
 func GetParticipantesByVotacaoID(votacaoID int64) []*entities.Participante {
 	query := `
 		SELECT p.id, p.nome, p.url_foto
@@ -121,7 +115,7 @@ func GetParticipantesByVotacaoID(votacaoID int64) []*entities.Participante {
 	participantes := []*entities.Participante{}
 	for rows.Next() {
 		p := &entities.Participante{}
-		if err := rows.Scan(&p.Id, &p.Nome, &p.UrlFoto); err != nil {
+		if err := rows.Scan(&p.ID, &p.Nome, &p.URLFoto); err != nil {
 			log.Printf("Error scanning participante row: %v", err)
 			continue
 		}

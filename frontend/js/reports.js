@@ -78,8 +78,8 @@ function populateVotacoesDropdown(votacoes) {
   
   reportVotacaoSelect.innerHTML = '<option value="">Selecione uma votação</option>';
   
-  votacoes.forEach(votacao => {
-    reportVotacaoSelect.innerHTML += `<option value="${votacao.Id}">${votacao.Descricao}</option>`;
+    votacoes.forEach(votacao => {
+    reportVotacaoSelect.innerHTML += `<option value="${votacao.id}">${votacao.descricao}</option>`;
   });
   
   console.log('Reports: Dropdown populated');

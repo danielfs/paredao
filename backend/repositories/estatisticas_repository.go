@@ -4,12 +4,11 @@ import (
 	"github.com/danielfs/paredao/backend/entities"
 )
 
-// GetTotalVotesForVotacao returns the total number of votes for a votacao
-func GetTotalVotesForVotacao(votacaoId int64) (int, error) {
+func GetTotalVotesForVotacao(votacaoID int64) (int, error) {
 	var total int
 	query := "SELECT COUNT(*) FROM votos WHERE votacao_id = ?"
 
-	err := DB.QueryRow(query, votacaoId).Scan(&total)
+	err := DB.QueryRow(query, votacaoID).Scan(&total)
 	if err != nil {
 		return 0, err
 	}
@@ -17,15 +16,14 @@ func GetTotalVotesForVotacao(votacaoId int64) (int, error) {
 	return total, nil
 }
 
-// GetTotalVotesByParticipante returns the total number of votes by participante for a votacao
-func GetTotalVotesByParticipante(votacaoId int64) ([]entities.ParticipanteTotalResponse, error) {
-	// First, get all participants for this votacao
-	participants := GetParticipantesByVotacaoID(votacaoId)
+func GetTotalVotesByParticipante(votacaoID int64) ([]entities.ParticipanteTotalResponse, error) {
+	// Primeiro, obtém todos os participantes para esta votação
+	participants := GetParticipantesByVotacaoID(votacaoID)
 
-	// Create a map to store vote totals for each participant
+	// Cria um mapa para armazenar os totais de votos para cada participante
 	participantTotals := make(map[int64]int)
 
-	// Query to get vote counts for participants who have votes
+	// Consulta para obter contagens de votos para participantes que têm votos
 	query := `
 		SELECT p.id, COUNT(*) as total
 		FROM votos v
@@ -34,51 +32,41 @@ func GetTotalVotesByParticipante(votacaoId int64) ([]entities.ParticipanteTotalR
 		GROUP BY p.id
 	`
 
-	rows, err := DB.Query(query, votacaoId)
+	rows, err := DB.Query(query, votacaoID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	// Fill the map with vote counts
+	// Preenche o mapa com contagens de votos
 	for rows.Next() {
-		var participanteId int64
+		var participanteID int64
 		var total int
-		if err := rows.Scan(&participanteId, &total); err != nil {
+		if err := rows.Scan(&participanteID, &total); err != nil {
 			return nil, err
 		}
-		participantTotals[participanteId] = total
+		participantTotals[participanteID] = total
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	// Create response with all participants, including those with zero votes
-	var totals []entities.ParticipanteTotalResponse
+	// Cria resposta com todos os participantes, incluindo aqueles com zero votos
+	totals := make([]entities.ParticipanteTotalResponse, 0, len(participants))
 	for _, p := range participants {
-		total := participantTotals[p.Id] // Will be 0 if no votes
+		total := participantTotals[p.ID] // Will be 0 if no votes
 		totals = append(totals, entities.ParticipanteTotalResponse{
-			ParticipanteId: p.Id,
+			ParticipanteID: p.ID,
 			Nome:           p.Nome,
 			Total:          total,
 		})
 	}
 
-	// Sort by total votes (descending)
-	for i := 0; i < len(totals)-1; i++ {
-		for j := i + 1; j < len(totals); j++ {
-			if totals[i].Total < totals[j].Total {
-				totals[i], totals[j] = totals[j], totals[i]
-			}
-		}
-	}
-
 	return totals, nil
 }
 
-// GetTotalVotesByHour returns the total number of votes per hour for a votacao
-func GetTotalVotesByHour(votacaoId int64) ([]entities.HourlyTotalResponse, error) {
+func GetTotalVotesByHour(votacaoID int64) ([]entities.HourlyTotalResponse, error) {
 	query := `
 		SELECT HOUR(data_hora) as hour, COUNT(*) as total
 		FROM votos
@@ -87,7 +75,7 @@ func GetTotalVotesByHour(votacaoId int64) ([]entities.HourlyTotalResponse, error
 		ORDER BY hour
 	`
 
-	rows, err := DB.Query(query, votacaoId)
+	rows, err := DB.Query(query, votacaoID)
 	if err != nil {
 		return nil, err
 	}
@@ -106,13 +94,13 @@ func GetTotalVotesByHour(votacaoId int64) ([]entities.HourlyTotalResponse, error
 		return nil, err
 	}
 
-	// Initialize all 24 hours with zero counts
+	// Inicializa todas as 24 horas com contagens zero
 	hourlyTotals := make([]entities.HourlyTotalResponse, 24)
 	for i := 0; i < 24; i++ {
 		hourlyTotals[i] = entities.HourlyTotalResponse{Hour: i, Total: 0}
 	}
 
-	// Update with actual counts
+	// Atualiza com contagens reais
 	for _, total := range totals {
 		hourlyTotals[total.Hour] = total
 	}

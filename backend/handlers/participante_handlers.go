@@ -5,20 +5,22 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
+
 	"github.com/danielfs/paredao/backend/entities"
 	"github.com/danielfs/paredao/backend/repositories"
-	"github.com/gorilla/mux"
 )
 
-// GetParticipantes handles GET /participantes
 func GetParticipantes(w http.ResponseWriter, r *http.Request) {
 	participantes := repositories.GetAllParticipantes()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(participantes)
+	if err := json.NewEncoder(w).Encode(participantes); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// GetParticipante handles GET /participantes/{id}
 func GetParticipante(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -34,10 +36,12 @@ func GetParticipante(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(participante)
+	if err := json.NewEncoder(w).Encode(participante); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// CreateParticipante handles POST /participantes
 func CreateParticipante(w http.ResponseWriter, r *http.Request) {
 	var participante entities.Participante
 	err := json.NewDecoder(r.Body).Decode(&participante)
@@ -46,21 +50,23 @@ func CreateParticipante(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
+	// Valida campos obrigatórios
 	if participante.Nome == "" {
 		http.Error(w, "Nome is required", http.StatusBadRequest)
 		return
 	}
 
-	// Save participante
+	// Salva participante
 	savedParticipante := repositories.SaveParticipante(&participante)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(savedParticipante)
+	if err := json.NewEncoder(w).Encode(savedParticipante); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// UpdateParticipante handles PUT /participantes/{id}
 func UpdateParticipante(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -69,14 +75,14 @@ func UpdateParticipante(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if participante exists
+	// Verifica se o participante existe
 	_, exists := repositories.GetParticipanteByID(id)
 	if !exists {
 		http.Error(w, "Participante not found", http.StatusNotFound)
 		return
 	}
 
-	// Decode request body
+	// Decodifica o corpo da requisição
 	var participante entities.Participante
 	err = json.NewDecoder(r.Body).Decode(&participante)
 	if err != nil {
@@ -84,23 +90,25 @@ func UpdateParticipante(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ensure ID matches path parameter
-	participante.Id = id
+	// Garante que o ID corresponde ao parâmetro do caminho
+	participante.ID = id
 
-	// Validate required fields
+	// Valida campos obrigatórios
 	if participante.Nome == "" {
 		http.Error(w, "Nome is required", http.StatusBadRequest)
 		return
 	}
 
-	// Save updated participante
+	// Salva o participante atualizado
 	updatedParticipante := repositories.SaveParticipante(&participante)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(updatedParticipante)
+	if err := json.NewEncoder(w).Encode(updatedParticipante); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// DeleteParticipante handles DELETE /participantes/{id}
 func DeleteParticipante(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
